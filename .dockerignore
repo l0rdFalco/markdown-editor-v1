@@ -1,0 +1,13 @@
+# Ignore everything
+*
+
+# Allow list
+!CONTRIBUTE.md
+!HISTORY.md
+!LICENSE
+!README.md
+!SECURITY.md
+!app
+!config
+!package.json
+!server.js

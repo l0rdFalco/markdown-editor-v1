@@ -1,0 +1,56 @@
+---
+# https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
+
+name: Docker Release
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version'
+        required: true
+        default: 'latest'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: Docker
+
+    steps:
+      # https://github.com/marketplace/actions/checkout
+      # - name: Build the Docker image
+      #   uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      #   run: docker build . --file Dockerfile --tag raneto/raneto:latest-$(date +%s)
+
+      # https://github.com/marketplace/actions/docker-setup-qemu
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+
+      # https://github.com/marketplace/actions/docker-setup-buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      # https://github.com/marketplace/actions/docker-login
+      # https://github.com/docker/login-action
+      - name: Login to Docker Hub
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # https://github.com/marketplace/actions/build-and-push-docker-images
+      # https://docs.github.com/en/actions/publishing-packages/publishing-docker-images
+      - name: Build and push "version"
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        with:
+          #context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            raneto/raneto:${{ github.event.inputs.version || github.ref_name }}
+            raneto/raneto:latest
